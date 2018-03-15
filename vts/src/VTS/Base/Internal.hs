@@ -107,7 +107,7 @@ fromArray arr d w h =
       fp = toForeignPtr arr
   in if len < d * w * h
      then Left "More elements needed"
-          else Right $ VTS d w h fp
+     else Right $ VTS d w h fp
 
 toArray :: (Storable a, Shape sh)
         => VoxelTensor a                    -- ^ voxel tensor
