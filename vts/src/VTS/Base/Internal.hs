@@ -28,18 +28,17 @@ module VTS.Base.Internal
 import           Data.Array.Repa                 ((:.) (..), Array (..),
                                                   Shape (..), Z (..), extent,
                                                   size)
-import           Data.Array.Repa.Repr.ForeignPtr (F (..), fromForeignPtr,
+import           Data.Array.Repa.Repr.ForeignPtr (F, fromForeignPtr,
                                                   toForeignPtr)
 import           Data.Typeable
-import           Foreign.ForeignPtr              (ForeignPtr (..),
+import           Foreign.ForeignPtr              (ForeignPtr,
                                                   mallocForeignPtrArray,
                                                   withForeignPtr)
-import           Foreign.Marshal.Array           (copyArray, peekArray,
-                                                  withArray)
+import           Foreign.Marshal.Array           (peekArray,
+                                                  pokeArray)
 import           Foreign.Storable                (Storable (..))
 import qualified GHC.Exts                        as L (IsList (..))
 import           System.IO.Unsafe                (unsafePerformIO)
-
 
 data VoxelTensor a = VTS
                      {-# UNPACK #-} !Int            -- ^ depth
@@ -64,9 +63,7 @@ fromList' items d w h =
   else Right $ unsafePerformIO $ genList items
     where genList ls = do
            fp <- mallocForeignPtrArray $ d * w * h
-           withForeignPtr fp $ \p ->
-             withArray ls $ \pls -> do
-             copyArray p pls $ d * w * h
+           withForeignPtr fp $ \p -> pokeArray p ls
            return $ VTS d w h fp
 
 -- | transformed to list
@@ -77,12 +74,10 @@ toList vts = let (ls,d,w,h) = toList' vts
              in (L.fromList ls, d,w,h)
 
 toList' (VTS d w h fp) =
-  let list = unsafePerformIO $ genList fp
+  let list = unsafePerformIO $ do
+        withForeignPtr fp $ \p -> peekArray (d * w * h) p
   in (list,d,w,h)
-  where genList fp = do
-          withForeignPtr fp $ \p -> do
-            peekArray (d * w * h) p
-
+  
 fromArrayTensor :: Storable a
                 => Array F (Z :. Int :. Int :. Int) a -- ^ Repa array tensor (3d)
                 -> VoxelTensor a                      -- ^ VTS

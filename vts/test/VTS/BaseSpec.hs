@@ -1,19 +1,19 @@
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE TypeOperators #-}
 
-module VTS.Base.InternalSpec
+module VTS.BaseSpec
     ( spec
     ) where
 
 import           Foreign.ForeignPtr
 import           Test.Hspec
-import           VTS.Base.Internal
+import           VTS.Base
 import           Foreign.Marshal.Array
 import           Data.Vector.Unboxed (Vector)
-import Data.Array.Repa hiding (toList)
+import Data.Array.Repa hiding (toList,map)
 import Data.Array.Repa.Repr.ForeignPtr
+import Data.Binary
 
--- | using hspec
 spec :: Spec
 spec = do
   describe "create from list" $ do
@@ -127,8 +127,79 @@ spec = do
     it "to 3d vector(should be failed)" $ do
       let (Left str) = fromList (mkList 6) 2 2 2
       str `shouldBe` strError
-      
-
+  describe "vts eq" $ do
+    it "self" $ do
+      let vts = mkVTS 2 2 2
+      vts == vts `shouldBe` True
+      vts /= vts `shouldBe` False
+      vts `shouldBe` vts
+    it "two same" $ do
+      let v1 = mkVTS 2 2 2
+          v2 = mkVTS 2 2 2
+      v1 == v2 `shouldBe` True
+      v2 == v1 `shouldBe` True
+      v1 /= v2 `shouldBe` False
+      v2 /= v1 `shouldBe` False
+      v1 `shouldBe` v2
+      v2 `shouldBe` v1
+    it "two with different shape & same size" $ do
+      let v1 = mkVTS 2 1 2
+          v2 = mkVTS 1 2 2
+          v3 = mkVTS 2 2 1
+      v1 == v2 `shouldBe` False
+      v1 /= v2 `shouldBe` True
+      v2 == v1 `shouldBe` False
+      v2 /= v1 `shouldBe` True
+      v1 == v3 `shouldBe` False
+      v1 /= v3 `shouldBe` True
+      v3 == v1 `shouldBe` False
+      v3 /= v1 `shouldBe` True
+      v2 == v3 `shouldBe` False
+      v2 /= v3 `shouldBe` True
+      v3 == v2 `shouldBe` False
+      v3 /= v2 `shouldBe` True
+      v1 `shouldNotBe` v2
+      v2 `shouldNotBe` v1
+      v1 `shouldNotBe` v3
+      v3 `shouldNotBe` v1
+      v2 `shouldNotBe` v3
+      v3 `shouldNotBe` v2
+    it "two, both shape and size is different" $ do
+      let v1 = mkVTS 2 2 2
+          v2 = mkVTS 3 3 3
+      v1 == v2 `shouldBe` False
+      v2 == v1 `shouldBe` False
+      v1 /= v2 `shouldBe` True
+      v2 /= v1 `shouldBe` True
+      v1 `shouldNotBe` v2
+      v2 `shouldNotBe` v1
+  describe "vts ord" $ do
+    it "eq self" $ do
+      let v = mkVTS 2 2 2
+      compare v v `shouldBe` EQ
+    it "eq same" $ do
+      let v1 = mkVTS 2 2 2
+          v2 = mkVTS 2 2 2
+      compare v1 v2 `shouldBe` EQ
+    it "\"same\" value, different size " $ do
+      let v1 = mkVTS 2 2 2
+          v2 = mkVTS 2 2 1
+      compare v1 v2 `shouldBe` GT
+      compare v2 v1 `shouldBe` LT
+    it "different value, same size " $ do
+      let v1 = mkVTSBase 1 2 2 2
+          v2 = mkVTSBase 2 2 2 2
+      compare v1 v2 `shouldBe` LT
+      compare v2 v1 `shouldBe` GT
+  describe "vts binary" $ do
+    it "id test" $ do
+      let origin = mkVTS 2 3 4
+          str = encode origin
+          coded = decode str
+      coded `shouldBe` origin
+  describe "show " $
+    it "show" $ do
+    print (mkVTS 2 3 4) `shouldReturn` ()
 
 peekFP len fp = withForeignPtr fp $ \p -> peekArray len p
 
@@ -139,3 +210,15 @@ mkVec :: Int -> Vector Int
 mkVec x = [0..x]
 
 strError = "More elements needed"
+
+mkVTS :: Int -> Int -> Int -> VoxelTensor Int
+mkVTS d w h =
+  let l = d * w * h
+      Right v = fromList (mkList l) d w h
+  in v
+
+mkVTSBase :: Int -> Int -> Int -> Int -> VoxelTensor Int
+mkVTSBase b d w h =
+  let l = d * w * h
+      Right v = fromList (map (+b) [0 .. l]) d w h
+  in v

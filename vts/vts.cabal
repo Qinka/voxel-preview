@@ -17,11 +17,17 @@ extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
 library
---  exposed-modules:     
+  exposed-modules:     VTS.Base
   other-modules:       VTS.Base.Internal
-  -- other-extensions:    
+                     , VTS.Base.Instance
+  other-extensions:    ForeignFunctionInterface
+                     , Unsafe
+                     , TypeOperators
+                     , TypeFamilyDependencies
+                     , DeriveDataTypeable
   build-depends:       base >=4.10 && <4.11
                      , repa
+                     , binary >= 0.8
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -Wall
@@ -30,12 +36,14 @@ test-suite spec
   type:                exitcode-stdio-1.0
   main-is:             Spec.hs
   hs-source-dirs:      test
-                     , src
   ghc-options:         -Wall
   build-depends:       base
                      , repa
                      , hspec
                      , vector >= 0.12
-  other-modules:       VTS.Base.InternalSpec
-                     , VTS.Base.Internal
-  default-language:     Haskell2010
+                     , vts
+                     , binary >= 0.8
+  other-modules:       VTS.BaseSpec
+  other-extensions:    OverloadedLists
+                     , TypeOperators
+  default-language:    Haskell2010
