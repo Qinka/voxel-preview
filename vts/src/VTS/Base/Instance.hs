@@ -11,22 +11,22 @@ The instance of various type class.
 -}
 
 {-# LANGUAGE ForeignFunctionInterface #-}
-{-# LANGUAGE Unsafe #-}
+{-# LANGUAGE Unsafe                   #-}
 
 module VTS.Base.Instance
   () where
 
-import VTS.Base.Internal
-import System.IO.Unsafe(unsafePerformIO)
-import Foreign.C.Types (CSize(..))
-import Foreign.ForeignPtr(withForeignPtr,ForeignPtr, mallocForeignPtrArray)
-import Foreign.Storable(Storable(..))
-import Data.Binary(Binary(..),Get)
-import Data.Word(Word8,Word16)
-import Control.Monad (when, replicateM)
-import Foreign.Ptr (Ptr)
-import           Foreign.Marshal.Array           (peekArray,
-                                                  pokeArray)
+import           Control.Monad         (replicateM, when)
+import           Data.Binary           (Binary (..), Get)
+import           Data.Word             (Word16, Word8)
+import           Foreign.C.Types       (CSize (..))
+import           Foreign.ForeignPtr    (ForeignPtr, mallocForeignPtrArray,
+                                        withForeignPtr)
+import           Foreign.Marshal.Array (peekArray, pokeArray)
+import           Foreign.Ptr           (Ptr)
+import           Foreign.Storable      (Storable (..))
+import           System.IO.Unsafe      (unsafePerformIO)
+import           VTS.Base.Internal
 
 -- | foregin functions for pointers
 
@@ -83,6 +83,9 @@ instance Typeinfos Float where
 
 instance Typeinfos Int where
   toTypeMagic _ = 0x6908 -- on 64 cpu
+
+instance Typeinfos Word8 where
+  toTypeMagic _ = 0x6501
 
 -- | instance binary's Get and Put
 -- type id : xb(e,g, f4, i4) "x" for the type, "b" for bytes,
