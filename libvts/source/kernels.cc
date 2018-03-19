@@ -21,7 +21,7 @@ const kernel_source get_source_text() {
   return &_kernel_sources;
 }
 
-size_t get_source_count() {
+unsigned get_source_count() {
   return _source_count;
 }
 
