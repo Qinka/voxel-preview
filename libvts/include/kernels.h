@@ -14,13 +14,13 @@
 #include <vts_error.h>
 #include <string>
 
-typedef const char ** kernel_source;
+typedef char* kernel_source;
 
 /**
  * get source text
  * @return the pointer of the source
  */
-const kernel_source get_source_text();
+const kernel_source* get_source_text();
 
 /**
  * get the count
