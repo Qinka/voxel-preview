@@ -38,7 +38,7 @@ vts_error load_library_context(int pid, int did) {
     clCreateProgramWithSource
     ( global_vts_context,
       get_source_count(),
-      (const char**)get_source_text(),
+      get_source_text(),
       0,
       &errCode);
   checkCLRt("create program failed", ErrorPG, VE_CREATE_PROGRAM_FAIL);

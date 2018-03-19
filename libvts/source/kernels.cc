@@ -5,19 +5,20 @@
 using namespace std;;
 
 
-static const kernel_source _kernel_sources[] = {
+static const char* _kernel_sources = {
   #include <kernel/test.cl>
+  "\n"
 };
 
 static const vector<string> kernel_list = {"test"};
 
-static const size_t _source_count = sizeof(_kernel_sources) / sizeof(kernel_source);
+static const size_t _source_count = 1;
 
 typedef map<string,cl_kernel> kMap;
 static kMap kernel_map = kMap();
 
-const kernel_source* get_source_text() {
-  return _kernel_sources;
+const char ** get_source_text() {
+  return &_kernel_sources;
 }
 
 unsigned get_source_count() {
