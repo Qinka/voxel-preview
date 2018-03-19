@@ -43,7 +43,7 @@ vts_error load_library_context(int pid, int did) {
       &errCode);
   checkCLRt("create program failed", ErrorPG, VE_CREATE_PROGRAM_FAIL);
   // build program 
-  checkCL(clBuildProgram(global_cl_program,0,0,0,0,0),
+  checkCL(clBuildProgram(global_cl_program,global_vts_dids.size(),&global_vts_dids[0],0,0,0),
           "Can not build program",
           ErrorPG, VE_CREATE_PROGRAM_FAIL);
   
@@ -55,9 +55,6 @@ vts_error load_library_context(int pid, int did) {
  ErrorK:
   free_all_kernels();
  ErrorPG:
-  char buffer[4096];
-  size_t len = 0;
-  clGetProgramBuildInfo(global_cl_program, global_vts_dids[global_cl_did], CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
   clReleaseProgram(global_cl_program);
  ErrorQU:
   for(auto queue:global_vts_command_queues)
