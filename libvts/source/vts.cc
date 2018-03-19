@@ -13,7 +13,7 @@ vts_error load_library_context(int pid, int did) {
   vts_error  rtCode = VE_SUCCESS;
   // variables
   auto platforms = vector<cl_platform_id>();
-  auto devices   = vector<cl_device_id>();
+  auto &devices   = global_vts_dids;
   // inits
   // device id
   global_cl_did = did;
@@ -55,6 +55,9 @@ vts_error load_library_context(int pid, int did) {
  ErrorK:
   free_all_kernels();
  ErrorPG:
+  char buffer[4096];
+  size_t len = 0;
+  clGetProgramBuildInfo(global_cl_program, global_vts_dids[global_cl_did], CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
   clReleaseProgram(global_cl_program);
  ErrorQU:
   for(auto queue:global_vts_command_queues)

@@ -21,6 +21,9 @@ extern std::vector<cl_command_queue> global_vts_command_queues;
 extern cl_program global_cl_program;
 /// global used devices
 extern int global_cl_did;
+/// global dids
+extern std::vector<cl_device_id> global_vts_dids;
+
 
 /**
  * load all platform infos

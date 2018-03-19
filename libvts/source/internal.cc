@@ -5,11 +5,13 @@ using namespace std;
 /// global vts context
 cl_context global_vts_context;
 /// global command queue
-std::vector<cl_command_queue> global_vts_command_queues;
+vector<cl_command_queue> global_vts_command_queues = vector<cl_command_queue>();
 /// global CL program
 cl_program global_cl_program;
 /// global used devices
 int global_cl_did = 0;
+/// global dids
+vector<cl_device_id> global_vts_dids = vector<cl_device_id>();
 
 vts_error load_platforms(vector<cl_platform_id> &platforms) {
   // error status
