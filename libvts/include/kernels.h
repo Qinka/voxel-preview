@@ -2,7 +2,7 @@
 #ifndef _VTS_KERNELS_H_
 #define _VTS_KERNELS_H_ 0
 
-#define KERNEL_DEFINES(str) #str
+#define KERNEL_DEF(str) "/* " __FILE__ "*/\n" #str "\n\n"
 
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
