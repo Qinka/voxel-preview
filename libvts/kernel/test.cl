@@ -1,4 +1,4 @@
-KERNEL_DEFINES
+KERNEL_DEF
 (
  __kernel void test(void) {
    int idx = get_global_id(0);

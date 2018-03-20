@@ -12,17 +12,18 @@
 #include <vector>
 #include <vts_error.h>
 #include <iostream>
+#include <stdint.h>
 
 /// global vts context
-extern cl_context global_vts_context;
+extern cl_context                    global_context;
 /// global command queue
-extern std::vector<cl_command_queue> global_vts_command_queues;
+extern std::vector<cl_command_queue> global_command_queues;
 /// global CL program
-extern cl_program global_cl_program;
-/// global used devices
-extern int global_cl_did;
+extern cl_program                    global_program;
 /// global dids
-extern std::vector<cl_device_id> global_vts_dids;
+extern std::vector<cl_device_id>     global_dids;
+/// global platform
+extern cl_platform_id                global_platform;
 
 
 /**
@@ -47,6 +48,13 @@ vts_error load_devices(std::vector<cl_device_id> &devices, cl_context &context, 
               << errInfo << std::endl;                    \
     rtCode = rtValue;                                     \
     goto errLabel;                                        \
+  }
+
+#define checkIn(err, op, var, errInfo, errLabel) \
+  if(err op var) {                               \
+    std::cerr << err     << std::endl                \
+              << errInfo << std::endl;           \
+    goto errLabel;                               \
   }
 
 #define checkE(cmd, rtVar, op, succValue, errInfo, errLabel, rtValue) \

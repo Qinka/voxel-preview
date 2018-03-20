@@ -3,15 +3,15 @@
 using namespace std;
 
 /// global vts context
-cl_context global_vts_context;
+cl_context               global_context = nullptr;
 /// global command queue
-vector<cl_command_queue> global_vts_command_queues = vector<cl_command_queue>();
+vector<cl_command_queue> global_command_queues = vector<cl_command_queue>();
 /// global CL program
-cl_program global_cl_program;
-/// global used devices
-int global_cl_did = 0;
+cl_program               global_program = nullptr;
 /// global dids
-vector<cl_device_id> global_vts_dids = vector<cl_device_id>();
+vector<cl_device_id>     global_dids = vector<cl_device_id>();
+/// global platform
+cl_platform_id           global_platform = nullptr;
 
 vts_error load_platforms(vector<cl_platform_id> &platforms) {
   // error status
@@ -29,7 +29,7 @@ vts_error load_platforms(vector<cl_platform_id> &platforms) {
 
   // std::vector<cl_platform_id> platforms(num);
   // resize vector
-  platforms.resize(2);
+  platforms.resize(num);
 
   // call the function to fetch all the platforms infos
   checkCL(clGetPlatformIDs(num, &platforms[0], &num),

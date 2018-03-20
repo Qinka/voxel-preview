@@ -28,8 +28,8 @@ set(
   ${VTS_SRC_DIR}/kernels.cc
   )
 
-add_library(vts STATIC ${VTS_SRC_FILES})
-link_libraries(vts ${OpenCL_LIBRARY})
+add_library(vts SHARED ${VTS_SRC_FILES})
+target_link_libraries(vts ${OpenCL_LIBRARY})
 if (${MSVC})
   add_definitions( /D _VTS_EXPORT_)
 else(${MSVC})
@@ -37,5 +37,5 @@ else(${MSVC})
 endif(${MSVC})
 
 add_executable(test_exe ${PROJECT_SOURCE_DIR}/test/test.cc)
-link_libraries(test_exe vts ${OpenCL_LIBRARY})
+target_link_libraries(test_exe vts ${OpenCL_LIBRARY})
 
