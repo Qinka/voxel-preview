@@ -4,7 +4,6 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include <exception>
 #include <cstdarg>
 #include <functional>
 
@@ -81,7 +80,7 @@ public:
                           ptr, &errCode);
     if(errCode != CL_SUCCESS){
       std::cerr << "fail to create memory " << __LINE__ << std ::endl;
-      throw std::exception("Fail to create memory");
+      throw "Fail to create memory";
     }
   }
   ~MemoryGen() {
@@ -122,7 +121,7 @@ public:
     va_end(ap);
     if(errCode != CL_SUCCESS) {
       std::cerr << "fail to create kernel" << __LINE__ << std::endl;
-      throw std::exception("Fail to create kernel");
+      throw "Fail to create kernel";
     }
   }
   ~KernelGen() {
