@@ -13,6 +13,10 @@ project(
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD   11)
 
+if(${MSVC})
+  set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+endif(${MSVC})
+
 ## OpenCL
 find_package(OpenCL 1.0 REQUIRED)
 
@@ -36,6 +40,13 @@ else(${MSVC})
   add_definitions( -D _VTS_EXPORT_)
 endif(${MSVC})
 
-add_executable(test_exe ${PROJECT_SOURCE_DIR}/test/test.cc)
-target_link_libraries(test_exe vts ${OpenCL_LIBRARY})
-
+enable_testing()
+## GoogleTest
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
+add_executable(vts-test ${PROJECT_SOURCE_DIR}/test/api_test.cc)
+target_link_libraries(vts-test ${GTEST_BOTH_LIBRARIES} vts ${OpenCL_LIBRARY})
+if(NOT(CMAKE_SYSTEM_NAME MATCHES "Windows"))
+  target_link_libraries(vts-test pthread)
+endif(NOT(CMAKE_SYSTEM_NAME MATCHES "Windows"))
+add_test(LIBVTS_TEST vts-test)

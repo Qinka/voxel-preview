@@ -109,7 +109,7 @@ cl_kernel callable_kernel(const char * kernel_name,
     size_t size = va_arg(ap,size_t);
     void* ptr = va_arg(ap,void*);
     *errCode = clSetKernelArg(rt, i, size, ptr);
-    checkIn(errCode, !=, CL_SUCCESS, "can not add arg of kernel",EndVa);
+    checkIn(*errCode, !=, CL_SUCCESS, "can not add arg of kernel",EndVa);
   }
 
   goto EndVa;
