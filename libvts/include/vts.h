@@ -50,6 +50,12 @@ extern "C" {
                             ...
                             );
 
+  cl_kernel callable_kernel_args(const char * kernel_name,
+                                 cl_int*      errCode,
+                                 const int    num_args,
+                                 va_list ap
+                                 );
+
   /**
    * get the command queues
    * @return the global command queues

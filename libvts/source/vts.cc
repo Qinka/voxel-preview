@@ -89,16 +89,13 @@ void free_library_context(){
   return;
 }
 
-cl_kernel callable_kernel(const char * kernel_name,
-                          cl_int*      errCode,
-                          const int    num_args,
-                          ...
-                          ) {
+cl_kernel callable_kernel_args(const char * kernel_name,
+                               cl_int*      errCode,
+                               const int    num_args,
+                               va_list ap
+                               ) {
   cl_kernel rt = 0;
   *errCode = CL_SUCCESS;
-
-  va_list ap;
-  va_start(ap,num_args);
 
   rt = clCreateKernel(global_program, kernel_name, errCode);
 
@@ -109,17 +106,29 @@ cl_kernel callable_kernel(const char * kernel_name,
     size_t size = va_arg(ap,size_t);
     void* ptr = va_arg(ap,void*);
     *errCode = clSetKernelArg(rt, i, size, ptr);
-    checkIn(*errCode, !=, CL_SUCCESS, "can not add arg of kernel",EndVa);
+    checkIn(*errCode, !=, CL_SUCCESS, "can not add arg of kernel",Error);
   }
 
-  goto EndVa;
-
- EndVa:
-  va_end(ap);
  Error:
   return rt;
 }
 
+
+cl_kernel callable_kernel(const char * kernel_name,
+                          cl_int*      errCode,
+                          const int    num_args,
+                          ...
+                          ) {
+  cl_kernel rt = 0;
+  va_list ap;
+  va_start(ap,num_args);
+
+  rt = callable_kernel_args(kernel_name, errCode, num_args, ap);
+
+  va_end(ap);
+ Error:
+  return rt;
+}
 
 const cl_command_queue* get_global_command_queue() {
   return &global_command_queues[0];
