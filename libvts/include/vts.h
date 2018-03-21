@@ -10,6 +10,7 @@
 
 #include <vts_error.h>
 #include <stdint.h>
+#include <stdarg.h>
 
 #ifdef __cplusplus
 extern "C" {
