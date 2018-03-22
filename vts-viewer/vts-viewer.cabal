@@ -4,13 +4,13 @@
 name:                vts-viewer
 version:             0.1.0.0
 synopsis:            The viewer of vts.
--- description:         
+description:         viewer of vts
 homepage:            https://github.com/Qinka/vts-preview
 license:             GPL-3
 license-file:        LICENSE
 author:              Johann Lee
 maintainer:          me@qinka.pro
--- copyright:           
+copyright:           (C) 2018 Johann Lee <me@qinka.pro>
 category:            Graphics
 build-type:          Simple
 extra-source-files:  ChangeLog.md
@@ -20,7 +20,7 @@ executable vts-viewer
   main-is:             Main.hs
   other-modules:       VTS.Viewer.Binding
                      , VTS.Viewer
-  -- other-extensions:    
+  other-extensions:    ForeignFunctionInterface
   build-depends:       base >=4.10 && <4.11
                      , vts
   hs-source-dirs:      src
