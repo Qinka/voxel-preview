@@ -15,4 +15,6 @@ typedef enum {
   VE_CREATE_KERNEL_FAIL, // fail to create kernels
 } vts_error;
 
+#include <assert.h>
+
 #endif // ! _VTS_ERROR_H_

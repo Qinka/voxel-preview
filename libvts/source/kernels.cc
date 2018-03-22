@@ -10,6 +10,7 @@ static const char* _kernel_sources = {
   #include <kernel/cast.cl>
   #include <kernel/scale.cl>
   #include <kernel/draw_points.cl>
+  #include <kernel/color.cl>
 };
 
 static const vector<string> kernel_list = {"test"};

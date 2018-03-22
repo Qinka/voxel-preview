@@ -15,12 +15,12 @@
 #include <stdlib.h>
 
 #include <vts.h>
-#include <vts-error.h>
+#include <vts_error.h>
 
 /**
- * Struct of computing, which is what hold system need.
+ * context of computing, which is what hold system need.
  */
-struct computing_reg_f {
+struct computing_context {
   size_t depth; // depth of voxel tensor
   size_t width; // width
   size_t height; // height
@@ -35,78 +35,88 @@ struct computing_reg_f {
 };
 
 /**
- * the consturctor of computing_reg_f
+ * the consturctor of computing_context
  * this consturctor will it with "host" pointers
  * @param depth the depth of tensor
  * @param width the width of tensor
  * @parma height the height of tensor
- * @return pointer of crf, if failed, it will return NULL.
+ * @return pointer of context, if failed, it will return NULL.
  * the defaults of scal, bottom, and top is 1,0,1; // TODO change limitf kernel to <= and >=
  */
-computing_reg_f* create_crf(size_t depth, size_t width, size_t height);
+struct computing_context* create_context(size_t depth, size_t width, size_t height);
 
 /**
- * release a computing_reg_f
- * @param crf pointer of computing_reg_f
+ * release a computing_context
+ * @param context pointer of computing_context
  */
-void release_crf(computing_reg_f * crf);
+void release_context(struct computing_context* context);
 
 
 /**
  * device computing context (struct)
  */
 struct device_contexts {
+  int   dev_idx;
   cl_mem d_voxel_tensor;
   cl_mem d_limit_tensor;
   cl_mem d_edge_points;
   cl_mem d_face_points;
-  cl_mem d_face_color;
-  // there should be kernels
+  cl_mem d_face_colors;
+  cl_kernel k_scalef;
+  cl_kernel k_limitf;
+  cl_kernel k_edge_points;
+  cl_kernel k_face_points;
+  cl_kernel k_face_colors;
 };
 
 /**
  * create device_contexts
+ * @parma cc computing contexts
+ * @return the device contexts
  */
-
-device_contexts* create_dev_context();
+struct device_contexts* create_dev_context(struct computing_context* cc, int dev_idx);
 
 /**
  * release device_contexts
+ * @param dc device contexts
  */
-void release_dev_context(device_contexts* dc);
-
+void release_dev_context(struct device_contexts* dc);
 
 /**
- * add the limiting computing to queue
+ * add the scale limiting computing to queue
+ * @parma cc computing contexts
+ * @param dc device contexts
  */
-cl_int add_limit_computing();
+cl_int add_scale_computing(struct computing_context* cc, struct device_contexts* dc);
+cl_int add_limit_computing(struct computing_context* cc, struct device_contexts* dc);
 
 /**
  * add the edges points computing (depended on limiting computing)
  */
-cl_int add_edgeps_computing();
+cl_int add_edgeps_computing(struct computing_context* cc, struct device_contexts* dc);
 
 /**
  * add the faces points computing (depended on limiting computing)
  */
-cl_int add_faceps_computing();
+cl_int add_faceps_computing(struct computing_context* cc, struct device_contexts* dc);
 
 /**
  * add the color computing (depended on limiting computing)
  */
-cl_int add_color_computing();
+cl_int add_color_computing(struct computing_context* cc, struct device_contexts* dc);
 
 /**
- * sycn computing; wait for finish
+ * sync computing; wait for finish
  */
-cl_int sycn_computing();
+cl_int sync_computing(struct computing_context* cc, struct device_contexts* dc);
 
 /**
  * copy memorys
  * this function will(should) copy the new one
  */
-cl_int copy_memory();
-
-
+cl_int copy_memory_voxel_tensor(struct computing_context* cc, struct device_contexts* dc);
+cl_int copy_memory_edge_points(struct computing_context* cc, struct device_contexts* dc);
+cl_int copy_memory_face_points(struct computing_context* cc, struct device_contexts* dc);
+cl_int copy_memory_face_colors(struct computing_context* cc, struct device_contexts* dc);
 
 #endif // !_VTS_VIEW_H_ 

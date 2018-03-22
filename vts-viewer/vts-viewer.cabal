@@ -18,8 +18,16 @@ cabal-version:       >=1.10
 
 executable vts-viewer
   main-is:             Main.hs
-  -- other-modules:       
+  other-modules:       VTS.Viewer.Binding
+                     , VTS.Viewer
   -- other-extensions:    
   build-depends:       base >=4.10 && <4.11
+                     , vts
   hs-source-dirs:      src
+  include-dirs:        include
   default-language:    Haskell2010
+  c-sources:           cbits/vts-view.c
+  includes:            vts.h
+                     , vts_error.h
+  extra-libraries:     vts
+                     , OpenCL

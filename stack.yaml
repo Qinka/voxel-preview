@@ -38,6 +38,7 @@ resolver: lts-11.0
 packages:
 - vts
 - vts-transformer
+- vts-viewer
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 # extra-deps: []
@@ -64,4 +65,14 @@ packages:
 # extra-lib-dirs: [/path/to/dir]
 #
 # Allow a newer minor version of GHC than the snapshot specifies
-# compiler-check: newer-minor
+# compiler-check: newer-mi
+
+extra-lib-dirs:
+  - libvts/build.d
+  - libvts\build.d\Debug
+  - libvts\build.d\Release
+  - C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\lib\x64
+extra-include-dirs:
+  - libvts/include
+  - libvts\include
+  - C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.1\include

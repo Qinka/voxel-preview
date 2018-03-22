@@ -13,7 +13,6 @@
 #include <CL/cl.h>
 #endif // __APPLE__
 
-
 // constant
 
 constexpr int CastingTestSize = 13;
@@ -24,6 +23,7 @@ extern char const scalef[]      = "scalef";
 extern char const limitf[]      = "limitf";
 extern char const edge_points[] = "edge_points";
 extern char const face_points[] = "face_points" ;
+extern char const color_filling[] = "color_filling";
 
 
 // testing fixture and environment fixture
@@ -475,5 +475,32 @@ TEST(draw,face2) {
           for (auto j = 0; j < 72; ++j){
             EXPECT_EQ(cur[j], 0);
           }
+      }
+}
+
+
+TEST(color,case1) {
+  auto on = FxTest<float,float,1,1*18>();
+  size_t ws[] = {1,1,1};
+
+  on.rands();
+  EXPECT_EQ(on.write(), CL_SUCCESS);
+  auto called_kernel =
+    KernelGen<color_filling>
+    (2,
+     sizeof(cl_mem), on.to->getMemObj(),
+     sizeof(cl_mem), on.from->getMemObj());
+  EXPECT_EQ(called_kernel.callKernel(3,ws), CL_SUCCESS);
+  EXPECT_EQ(clFinish(get_global_command_queue()[0]),CL_SUCCESS);
+  EXPECT_EQ(on.read(), CL_SUCCESS);
+  
+  for(auto x = 0; x < 1; ++x)
+    for(auto y = 0; y < 1; ++y)
+      for(auto z = 0; z < 1; ++z) {
+        int i = x + y * 1 + z * 1 * 1;
+        float *cur = on.result + i * 18;
+        for(auto j = 0; j < 18; ++j){
+          EXPECT_EQ(cur[j],on.origin[i]);
+        }
       }
 }

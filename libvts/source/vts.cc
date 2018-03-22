@@ -1,3 +1,9 @@
+#ifdef NDEBUG
+#pragma message ("In Release")
+#else
+#pragma message ("In Debug")
+#endif
+
 #include <vts_internal.h>
 #include <kernels.h>
 #include <vts.h>
@@ -6,6 +12,7 @@
 
 using namespace std;
 
+static bool is_init = false;
 
 vts_error load_library_context(int pid) {
   // error codes
@@ -58,6 +65,7 @@ vts_error load_library_context(int pid) {
           "Can not build program",
           ErrorPG, VE_CREATE_PROGRAM_FAIL);
 
+  is_init = true;
   goto Error;
 
  ErrorPG:
@@ -82,10 +90,12 @@ vts_error load_library_context(int pid) {
 }
 
 void free_library_context(){
+  assert(is_init);
   clReleaseProgram(global_program);
   for(auto queue:global_command_queues)
     {clReleaseCommandQueue(queue);}
   clReleaseContext(global_context);
+  is_init = false;
   return;
 }
 
@@ -94,6 +104,7 @@ cl_kernel callable_kernel_args(const char * kernel_name,
                                const int    num_args,
                                va_list ap
                                ) {
+  assert(is_init);
   cl_kernel rt = 0;
   *errCode = CL_SUCCESS;
 
@@ -131,26 +142,33 @@ cl_kernel callable_kernel(const char * kernel_name,
 }
 
 const cl_command_queue* get_global_command_queue() {
+  assert(is_init);
   return &global_command_queues[0];
 }
 const cl_context get_global_context(){
+  assert(is_init);
   return global_context;
 }
 const cl_program get_global_program(){
+  assert(is_init);
   return global_program;
 }
 const cl_device_id* get_global_dids(){
+  assert(is_init);
   return &global_dids[0];
 }
 const cl_platform_id get_global_platform() {
+  assert(is_init);
   return global_platform;
 }
 const uint32_t get_num_devices(){
+  assert(is_init);
   return global_dids.size();
 }
 
 
 void test_cl_kernel_call(size_t n_worker) {
+  assert(is_init);
   auto errCode = CL_SUCCESS;
   auto test_kernel = callable_kernel("test",&errCode,0);
   cout << errCode << endl;

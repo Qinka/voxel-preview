@@ -16,7 +16,6 @@
 extern "C" {
 #endif // ! __cplusplus
 
-
   /**
    * load libraray context
    * the context created will be store in "global_vts_context"
