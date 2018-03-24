@@ -26,10 +26,10 @@ struct computing_context* create_context(size_t depth, size_t width, size_t heig
   ptr =  malloc(sizeof(struct computing_context));
   if (!ptr) goto Fail;
 
-
   ptr -> depth        = depth;
   ptr -> width        = width;
   ptr -> height       = height;
+  ptr -> all          = depth * width * height;
   ptr -> scal         = 1;
   ptr -> bottom       = 0;
   ptr -> top          = 1.1;
@@ -46,7 +46,7 @@ struct computing_context* create_context(size_t depth, size_t width, size_t heig
   fp = malloc(sizeof(float) * num * 72);
   if(!fp) goto FreeEP;
 
-  fc = malloc(sizeof(float) * num * 3);
+  fc = malloc(sizeof(float) * num * 72);
   if(!fc) goto FreeFP;
 
   ptr -> voxel_tensor = vt;
@@ -120,7 +120,7 @@ struct device_contexts* create_dev_context(struct computing_context* cc, int dev
 
   dc->d_face_colors = clCreateBuffer(get_global_context(),
                                     CL_MEM_READ_WRITE,
-                                    sizeof(float) * base * 3,
+                                    sizeof(float) * base * 72,
                                     NULL, &errCode);
   checkCL(errCode, !=, CL_SUCCESS, "faile to alloc device memory " ,FreeDFP);
 
@@ -133,8 +133,8 @@ struct device_contexts* create_dev_context(struct computing_context* cc, int dev
   dc->k_limitf = callable_kernel("limitf",&errCode,4,
                                  sizeof(cl_mem),&(dc->d_limit_tensor),
                                  sizeof(cl_mem),&(dc->d_limit_tensor),
-                                 sizeof(float), &(cc->bottom),
-                                 sizeof(float), &(cc->top));
+                                 sizeof(float), &(cc->top),
+                                 sizeof(float), &(cc->bottom));
   checkCL(errCode, !=, CL_SUCCESS, "faile to create kernel " ,FreeKS);
   
   dc->k_edge_points = callable_kernel("edge_points",&errCode,2,
@@ -200,18 +200,16 @@ void release_dev_context(struct device_contexts* dc) {
 cl_int add_scale_computing(struct computing_context* cc, struct device_contexts* dc) {
   assert(cc != NULL);
   assert(dc != NULL);
-  size_t ws[] = {cc -> width * cc -> height * cc -> depth};
   return clEnqueueNDRangeKernel(get_global_command_queue()[dc->dev_idx],
-                                dc -> k_scalef, 1, 0, ws,
+                                dc -> k_scalef, 1, 0, &(cc->all),
                                 0,0,0,0);
 }
 
 cl_int add_limit_computing(struct computing_context* cc, struct device_contexts* dc) {
   assert(cc != NULL);
   assert(dc != NULL);
-  size_t ws[] = {cc -> width * cc -> height * cc -> depth};
   return clEnqueueNDRangeKernel(get_global_command_queue()[dc->dev_idx],
-                                dc -> k_limitf, 1, 0, ws,
+                                dc -> k_limitf, 1, 0, &(cc->all),
                                 0,0,0,0);
 }
 
@@ -219,27 +217,24 @@ cl_int add_limit_computing(struct computing_context* cc, struct device_contexts*
 cl_int add_edgeps_computing(struct computing_context* cc, struct device_contexts* dc) {
   assert(cc != NULL);
   assert(dc != NULL);
-  size_t ws[] = {cc -> width, cc -> height, cc -> depth};
   return clEnqueueNDRangeKernel(get_global_command_queue()[dc->dev_idx],
-                                dc -> k_edge_points, 3, 0, ws,
+                                dc -> k_edge_points, 3, 0, &(cc->width),
                                 0,0,0,0);
 }
 
 cl_int add_faceps_computing(struct computing_context* cc, struct device_contexts* dc) {
   assert(cc != NULL);
   assert(dc != NULL);
-  size_t ws[] = {cc -> width, cc -> height, cc -> depth};
   return clEnqueueNDRangeKernel(get_global_command_queue()[dc->dev_idx],
-                                dc -> k_face_points, 3, 0, ws,
+                                dc -> k_face_points, 3, 0,  &(cc->width),
                                 0,0,0,0);
 }
 
 cl_int add_color_computing(struct computing_context* cc, struct device_contexts* dc) {
   assert(cc != NULL);
   assert(dc != NULL);
-  size_t ws[] = {cc -> width, cc -> height, cc -> depth};
   return clEnqueueNDRangeKernel(get_global_command_queue()[dc->dev_idx],
-                                dc -> k_face_colors, 3, 0, ws,
+                                dc -> k_face_colors, 3, 0,  &(cc->width),
                                 0,0,0,0);
 }
 
@@ -249,23 +244,31 @@ cl_int sync_computing(struct computing_context* cc, struct device_contexts* dc) 
   return clFinish(get_global_command_queue()[dc->dev_idx]);
 }
 
-#define ccsize(cc) (cc->depth * cc->width * cc->height)
 
 cl_int copy_memory_voxel_tensor(struct computing_context* cc, struct device_contexts* dc) {
   assert(cc != NULL);
   assert(dc != NULL);
   return clEnqueueWriteBuffer(get_global_command_queue()[dc->dev_idx],
-                             dc->d_voxel_tensor, CL_TRUE,
-                             0, sizeof(float)*ccsize(cc), cc->voxel_tensor,
+                             dc->d_voxel_tensor, CL_FALSE,
+                             0, sizeof(float)*cc->all, cc->voxel_tensor,
                              0,0,0);
+}
+
+cl_int copy_memory_limit_tensor(struct computing_context* cc, struct device_contexts* dc) {
+  assert(cc != NULL);
+  assert(dc != NULL);
+  return clEnqueueReadBuffer(get_global_command_queue()[dc->dev_idx],
+                              dc->d_limit_tensor, CL_FALSE,
+                              0, sizeof(float)*cc->all, cc->limit_tensor,
+                              0,0,0);
 }
 
 cl_int copy_memory_edge_points(struct computing_context* cc, struct device_contexts* dc) {
   assert(cc != NULL);
   assert(dc != NULL);
   return clEnqueueReadBuffer(get_global_command_queue()[dc->dev_idx],
-                             dc->d_edge_points, CL_TRUE,
-                             0, sizeof(float)*ccsize(cc)*72, cc->edge_points,
+                             dc->d_edge_points, CL_FALSE,
+                             0, sizeof(float)*cc->all*72, cc->edge_points,
                              0,0,0);
 }
 
@@ -273,8 +276,8 @@ cl_int copy_memory_face_points(struct computing_context* cc, struct device_conte
   assert(cc != NULL);
   assert(dc != NULL);
   return clEnqueueReadBuffer(get_global_command_queue()[dc->dev_idx],
-                             dc->d_face_points, CL_TRUE,
-                             0, sizeof(float)*ccsize(cc)*72, cc->face_points,
+                             dc->d_face_points, CL_FALSE,
+                             0, sizeof(float)*cc->all*72, cc->face_points,
                              0,0,0);
 }
 
@@ -282,8 +285,7 @@ cl_int copy_memory_face_colors(struct computing_context* cc, struct device_conte
   assert(cc != NULL);
   assert(dc != NULL);
   return clEnqueueReadBuffer(get_global_command_queue()[dc->dev_idx],
-                             dc->d_face_colors, CL_TRUE,
-                             0, sizeof(float)*ccsize(cc)*3, cc->face_colors,
+                             dc->d_face_colors, CL_FALSE,
+                             0, sizeof(float)*cc->all*72, cc->face_colors,
                              0,0,0);
 }
-#undef ccsize

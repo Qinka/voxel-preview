@@ -21,9 +21,10 @@
  * context of computing, which is what hold system need.
  */
 struct computing_context {
-  size_t depth; // depth of voxel tensor
   size_t width; // width
+  size_t depth; // depth of voxel tensor
   size_t height; // height
+  size_t all;
   float scal; // scal of voxel (for color)
   float bottom; // bottom value
   float top; // top value
@@ -115,6 +116,7 @@ cl_int sync_computing(struct computing_context* cc, struct device_contexts* dc);
  * this function will(should) copy the new one
  */
 cl_int copy_memory_voxel_tensor(struct computing_context* cc, struct device_contexts* dc);
+cl_int copy_memory_limit_tensor(struct computing_context* cc, struct device_contexts* dc);
 cl_int copy_memory_edge_points(struct computing_context* cc, struct device_contexts* dc);
 cl_int copy_memory_face_points(struct computing_context* cc, struct device_contexts* dc);
 cl_int copy_memory_face_colors(struct computing_context* cc, struct device_contexts* dc);

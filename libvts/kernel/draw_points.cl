@@ -1,11 +1,24 @@
 KERNEL_DEF
 (
- struct cuba_points_t {
-   float points[72];
- }
- __attribute__((aligned(1)))
- ;
- )
+ __constant const float edge_offset[] =
+   {-0.5,  -0.5,  -0.5,  0.5,  -0.5,  -0.5,
+     0.5,  -0.5,  -0.5,  0.5,  0.5,  -0.5,
+     0.5,  0.5,  -0.5,  0.5,  0.5,  0.5,
+     
+     0.5,  -0.5,  -0.5,  0.5,  -0.5,  0.5,
+     0.5,  -0.5,  0.5,  0.5,  0.5,  0.5,
+     0.5,  0.5,  0.5,  -0.5,  0.5,  0.5,
+
+     0.5,  -0.5,  0.5,  -0.5,  -0.5,  0.5,
+     -0.5,  -0.5,  0.5,  -0.5,  0.5,  0.5,
+       -0.5,  0.5,  0.5,  -0.5,  0.5,  -0.5,
+       
+       -0.5,  -0.5,  0.5,  -0.5,  -0.5,  -0.5,
+       -0.5,  -0.5,  -0.5,  -0.5,  0.5,  -0.5,
+       -0.5,  0.5,  -0.5,  0.5,  0.5,  -0.5,
+       };
+)
+
 
 KERNEL_DEF
 (
@@ -21,41 +34,40 @@ KERNEL_DEF
    int idxk   = idx0 * 12 * 2 * 3;
    __global float * cur = points + idxk;
 
-   if (values[idx0] > 0) {
-     *cur++ = 0+x;  *cur++ = 0+y;  *cur++ = 0+z;  *cur++ = 1+x;  *cur++ = 0+y;  *cur++ = 0+z;
-     *cur++ = 1+x;  *cur++ = 0+y;  *cur++ = 0+z;  *cur++ = 1+x;  *cur++ = 1+y;  *cur++ = 0+z;
-     *cur++ = 1+x;  *cur++ = 1+y;  *cur++ = 0+z;  *cur++ = 1+x;  *cur++ = 1+y;  *cur++ = 1+z;
-
-     *cur++ = 1+x;  *cur++ = 0+y;  *cur++ = 0+z;  *cur++ = 1+x;  *cur++ = 0+y;  *cur++ = 1+z;
-     *cur++ = 1+x;  *cur++ = 0+y;  *cur++ = 1+z;  *cur++ = 1+x;  *cur++ = 1+y;  *cur++ = 1+z;
-     *cur++ = 1+x;  *cur++ = 1+y;  *cur++ = 1+z;  *cur++ = 0+x;  *cur++ = 1+y;  *cur++ = 1+z;
-
-     *cur++ = 1+x;  *cur++ = 0+y;  *cur++ = 1+z;  *cur++ = 0+x;  *cur++ = 0+y;  *cur++ = 1+z;
-     *cur++ = 0+x;  *cur++ = 0+y;  *cur++ = 1+z;  *cur++ = 0+x;  *cur++ = 1+y;  *cur++ = 1+z;
-     *cur++ = 0+x;  *cur++ = 1+y;  *cur++ = 1+z;  *cur++ = 0+x;  *cur++ = 1+y;  *cur++ = 0+z;
-
-     *cur++ = 0+x;  *cur++ = 0+y;  *cur++ = 1+z;  *cur++ = 0+x;  *cur++ = 0+y;  *cur++ = 0+z;
-     *cur++ = 0+x;  *cur++ = 0+y;  *cur++ = 0+z;  *cur++ = 0+x;  *cur++ = 1+y;  *cur++ = 0+z;
-     *cur++ = 0+x;  *cur++ = 1+y;  *cur++ = 0+z;  *cur++ = 1+x;  *cur++ = 1+y;  *cur++ = 0+z;
-   }
-   else {
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
+   for(int i = 0; i < 24; ++i) {
+     cur[i*3+0] = isless(0,values[idx0]) * (edge_offset[i*3+0] + x - width  / 2);
+     cur[i*3+1] = isless(0,values[idx0]) * (edge_offset[i*3+1] + y - height / 2);
+     cur[i*3+2] = isless(0,values[idx0]) * (edge_offset[i*3+2] + z - depth  / 2);
    }
  }
+ )
+
+
+
+
+KERNEL_DEF
+(
+ __constant const float face_offset[] =
+   {-0.5,  -0.5,  -0.5,  0.5,  -0.5,  -0.5,
+       0.5,  0.5,  -0.5,  -0.5,  0.5,  -0.5,
+
+       -0.5,  -0.5,  -0.5,  -0.5,  0.5,  -0.5,
+       -0.5,  0.5,  0.5,  -0.5,  -0.5,  0.5,
+
+       -0.5,  -0.5,  -0.5,  0.5,  -0.5,  -0.5,
+       0.5,  -0.5,  0.5,  -0.5,  -0.5,  0.5,
+
+
+       0.5,  0.5,  0.5,  -0.5,  0.5,  0.5,
+       -0.5,  -0.5,  0.5,  0.5,  -0.5,  0.5,
+
+       0.5,  0.5,  0.5,  0.5,  -0.5,  0.5,
+       0.5,  -0.5,  -0.5,  0.5,  0.5,  -0.5,
+     
+       0.5,  0.5,  0.5,  -0.5,  0.5,  0.5,
+       -0.5,  0.5,  -0.5,  0.5,  0.5,  -0.5,
+
+       };
  )
 
 KERNEL_DEF
@@ -72,45 +84,10 @@ KERNEL_DEF
    int idxk   = idx0 * 6 * 4 * 3;
    __global float * cur = points + idxk;
 
-   if (values[idx0] > 0) {
-     *cur++ = 0+x;  *cur++ = 0+y;  *cur++ = 0+z;  *cur++ = 1+x;  *cur++ = 0+y;  *cur++ = 0+z;
-     *cur++ = 1+x;  *cur++ = 1+y;  *cur++ = 0+z;  *cur++ = 0+x;  *cur++ = 1+y;  *cur++ = 0+z;
-
-     *cur++ = 0+x;  *cur++ = 0+y;  *cur++ = 0+z;  *cur++ = 0+x;  *cur++ = 1+y;  *cur++ = 0+z;
-     *cur++ = 0+x;  *cur++ = 1+y;  *cur++ = 1+z;  *cur++ = 0+x;  *cur++ = 0+y;  *cur++ = 1+z;
-
-     *cur++ = 0+x;  *cur++ = 0+y;  *cur++ = 0+z;  *cur++ = 1+x;  *cur++ = 0+y;  *cur++ = 0+z;
-     *cur++ = 1+x;  *cur++ = 0+y;  *cur++ = 1+z;  *cur++ = 0+x;  *cur++ = 0+y;  *cur++ = 1+z;
-
-
-     *cur++ = 1+x;  *cur++ = 1+y;  *cur++ = 1+z;  *cur++ = 0+x;  *cur++ = 1+y;  *cur++ = 1+z;
-     *cur++ = 0+x;  *cur++ = 0+y;  *cur++ = 1+z;  *cur++ = 1+x;  *cur++ = 0+y;  *cur++ = 1+z;
-
-     *cur++ = 1+x;  *cur++ = 1+y;  *cur++ = 1+z;  *cur++ = 1+x;  *cur++ = 0+y;  *cur++ = 1+z;
-     *cur++ = 1+x;  *cur++ = 0+y;  *cur++ = 0+z;  *cur++ = 1+x;  *cur++ = 1+y;  *cur++ = 0+z;
-
-     *cur++ = 1+x;  *cur++ = 1+y;  *cur++ = 1+z;  *cur++ = 0+x;  *cur++ = 1+y;  *cur++ = 1+z;
-     *cur++ = 0+x;  *cur++ = 1+y;  *cur++ = 0+z;  *cur++ = 1+x;  *cur++ = 1+y;  *cur++ = 0+z;
-   }
-   else {
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-
-
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
-     *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;  *cur++ = 0;
+   for(int i = 0; i< 24; ++i) {
+     cur[i*3+0] = isless(0,values[idx0]) * (face_offset[i*3+0] + x - width  / 2);
+     cur[i*3+1] = isless(0,values[idx0]) * (face_offset[i*3+1] + y - height / 2);
+     cur[i*3+2] = isless(0,values[idx0]) * (face_offset[i*3+2] + z - depth  / 2);
    }
  }
  )

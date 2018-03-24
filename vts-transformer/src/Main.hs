@@ -123,7 +123,7 @@ splitIntoBoxes :: Storable x
 splitIntoBoxes (l, t, r ,b) (d, w, h) (imgW, imgH) v =
   let n_w = imgW `div` boxW
       n_h = imgH `div` boxH
-      indexes = [(i,j) | i <- [0..n_w-1], j <- [0..n_h-1]]
+      indexes = [(i,j) | j <- [0..n_h-1], i <- [0..n_w-1]]
       allRows = single <$> indexes
   in split d allRows
   where boxH = h + t + b

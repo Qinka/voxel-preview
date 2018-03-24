@@ -19,6 +19,7 @@ module VTS.Viewer.Binding
   , getDepth
   , getWidth
   , getHeight
+  , getNum
   , getScale
   , getBottom
   , getTop
@@ -26,6 +27,7 @@ module VTS.Viewer.Binding
   , getFaceColor
   , getFacePoint
   , getLimitTensor
+  , getVoxelTensor
   , setBottom
   , setDepth
   , setHeight
@@ -46,9 +48,11 @@ module VTS.Viewer.Binding
   , copyFaceColors
   , copyFacePoints
   , copyVoxelTensor
+  , copyLimitTensor
   , sync
   , loadLibContext
   , freeLibContext
+  , printAllPlaDev
   ) where
 
 #include "vts-view.h"
@@ -65,10 +69,11 @@ unCFlt (CFloat f) = f
 
 data DeviceContext = DeviceContext
   { unDeviceContextPtr :: Ptr DeviceContext}
-  deriving (Eq)
+  deriving (Eq,Show)
 
 data ComputingContext = ComputingContext
   { unComputingContextPtr :: Ptr ComputingContext}
+  deriving (Eq,Show)
 
 getDepth  :: ComputingContext -> IO Int
 getDepth  (ComputingContext p) = #{peek struct computing_context,  depth} p
@@ -88,6 +93,9 @@ getBottom (ComputingContext p) = unCFlt <$> #{peek struct computing_context, bot
 getTop    :: ComputingContext -> IO Float
 getTop    (ComputingContext p) = unCFlt <$> #{peek struct computing_context,    top} p
 
+getNum    :: ComputingContext -> IO Int
+getNum    (ComputingContext p) = #{peek struct computing_context, all} p
+
 setDepth  :: ComputingContext -> Int   -> IO ()
 setDepth  (ComputingContext p) e = #{poke struct computing_context,  depth} p e
 setWidth  :: ComputingContext -> Int   -> IO ()
@@ -100,6 +108,7 @@ setBottom :: ComputingContext -> Float -> IO ()
 setBottom (ComputingContext p) e = #{poke struct computing_context, bottom} p e
 setTop    :: ComputingContext -> Float -> IO ()
 setTop    (ComputingContext p) e = #{poke struct computing_context,    top} p e
+
 
 getVoxelTensor :: ComputingContext -> IO (Ptr Float)
 getVoxelTensor (ComputingContext p) = #{peek struct computing_context, voxel_tensor} p
@@ -153,6 +162,7 @@ foreign import ccall "add_faceps_computing" _add_faceps_computing :: Ptr Computi
 foreign import ccall "add_color_computing" _add_color_computing :: Ptr ComputingContext -> Ptr DeviceContext -> IO CInt
 foreign import ccall "sync_computing" _sync_computing :: Ptr ComputingContext -> Ptr DeviceContext -> IO CInt
 foreign import ccall "copy_memory_voxel_tensor" _copy_memory_voxel_tensor :: Ptr ComputingContext -> Ptr DeviceContext -> IO CInt
+foreign import ccall "copy_memory_limit_tensor" _copy_memory_limit_tensor :: Ptr ComputingContext -> Ptr DeviceContext -> IO CInt
 foreign import ccall "copy_memory_edge_points" _copy_memory_edge_points :: Ptr ComputingContext -> Ptr DeviceContext -> IO CInt
 foreign import ccall "copy_memory_face_points" _copy_memory_face_points :: Ptr ComputingContext -> Ptr DeviceContext -> IO CInt
 foreign import ccall "copy_memory_face_colors" _copy_memory_face_colors :: Ptr ComputingContext -> Ptr DeviceContext -> IO CInt
@@ -228,6 +238,9 @@ sync = mkComputing $ \(ComputingContext pcc) (DeviceContext pdc) ->
 
 copyVoxelTensor = mkComputing $ \(ComputingContext pcc) (DeviceContext pdc) ->
   fromIntegral <$> _copy_memory_voxel_tensor pcc pdc
+
+copyLimitTensor = mkComputing $ \(ComputingContext pcc) (DeviceContext pdc) ->
+  fromIntegral <$> _copy_memory_limit_tensor pcc pdc
 
 copyEdgePoints = mkComputing $ \(ComputingContext pcc) (DeviceContext pdc) ->
   fromIntegral <$> _copy_memory_edge_points pcc pdc

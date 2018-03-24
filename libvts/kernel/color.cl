@@ -9,10 +9,10 @@ KERNEL_DEF
    int height = get_global_size(1);
    int depth  = get_global_size(2);
    int idx0   = x + y * width + z * width * height;
-   int idxk   = idx0 * 6 * 3;
+   int idxk   = idx0 * 72;
 
    __global float * cur = colors + idxk;
-   for(int i = 0 ; i < 18; ++i) {
+   for(int i = 0 ; i < 72; ++i) {
      *cur++ = values[idx0];
    }
  }
