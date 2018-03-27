@@ -54,7 +54,7 @@ display cc dc st = do
   -- launch thread for drawing and computing
   s1 <- newEmptyMVar
   s2 <- newEmptyMVar
-  tid <- forkIO $ computing cc dc s1 s2
+  tid <- forkOS $ computing cc dc s1 s2
   drawLoop st cc dc s1 s2
   killThread tid
 
@@ -150,8 +150,6 @@ computing cc dc s1 s2 = runComputingM cc dc $ do
   sync
   computeLoop s1 s2
   where computeLoop s1 s2 = do
-          -- wait signal
-          liftIO $ takeMVar s1
 
           -- computing limits
           addScale
@@ -164,6 +162,9 @@ computing cc dc s1 s2 = runComputingM cc dc $ do
           addFaceColors
           addFacePoints
           sync
+
+          -- wait signal
+          liftIO $ takeMVar s1
 
           -- copy points and colors
           copyEdgePoints
