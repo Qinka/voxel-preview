@@ -200,14 +200,22 @@ void release_dev_context(struct device_contexts* dc) {
 cl_int add_scale_computing(struct computing_context* cc, struct device_contexts* dc) {
   assert(cc != NULL);
   assert(dc != NULL);
+  cl_int err = CL_SUCCESS;
+  err = clSetKernelArg(dc->k_scalef,2,sizeof(float),&(cc->scal));
+  if (err != CL_SUCCESS) return err;
   return clEnqueueNDRangeKernel(get_global_command_queue()[dc->dev_idx],
                                 dc -> k_scalef, 1, 0, &(cc->all),
-                                0,0,0,0);
+                               0,0,0,0);
 }
 
 cl_int add_limit_computing(struct computing_context* cc, struct device_contexts* dc) {
   assert(cc != NULL);
   assert(dc != NULL);
+  cl_int err = CL_SUCCESS;
+  err = clSetKernelArg(dc->k_limitf,2,sizeof(float),&(cc->top));
+  if (err != CL_SUCCESS) return err;
+  err = clSetKernelArg(dc->k_limitf,3,sizeof(float),&(cc->bottom));
+  if (err != CL_SUCCESS) return err;
   return clEnqueueNDRangeKernel(get_global_command_queue()[dc->dev_idx],
                                 dc -> k_limitf, 1, 0, &(cc->all),
                                 0,0,0,0);
