@@ -16,21 +16,35 @@ build-type:          Simple
 extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
-executable vts-viewer
-  main-is:             Main.hs
-  other-modules:       VTS.Viewer.Binding
+library
+  exposed-modules:     VTS.Viewer.Binding
                      , VTS.Viewer
-  other-extensions:    ForeignFunctionInterface
   build-depends:       base >=4.10 && <4.11
                      , vts
                      , OpenGL
                      , GLFW
-                     , stm
   hs-source-dirs:      src
-  include-dirs:        include
   default-language:    Haskell2010
+  other-extensions:    ForeignFunctionInterface
+                       RecordWildCards
   c-sources:           cbits/vts-view.c
+  include-dirs:        include
   includes:            vts.h
                      , vts_error.h
   extra-libraries:     vts
-                     , OpenCL
+  if os(windows)
+     extra-libraries:  OpenCL
+  if os(darwin)
+     frameworks:       OpenCL
+  if os(linux)
+     extra-libraries:  OpenCL
+     frameworks:       OpenCL
+                      
+
+executable vts-viewer
+  main-is:             vts-viewer.hs
+  build-depends:       base >=4.10 && <4.11
+                     , vts
+                     , vts-viewer
+  hs-source-dirs:      src
+  default-language:    Haskell2010

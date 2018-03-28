@@ -50,6 +50,9 @@ module VTS.Viewer.Binding
   , copyVoxelTensor
   , copyLimitTensor
   , sync
+  , updateBottom
+  , updateScale
+  , updateTop
   , loadLibContext
   , freeLibContext
   , printAllPlaDev
@@ -214,8 +217,8 @@ copyFacePoints  :: Computing IO Int
 copyFaceColors  :: Computing IO Int
 
 mkComputing :: Monad m
-            => (ComputingContext -> DeviceContext -> m Int)
-            -> Computing m Int
+            => (ComputingContext -> DeviceContext -> m a)
+            -> Computing m a
 mkComputing f = Computing $ \cc dc -> (\x -> (x,cc,dc)) <$> f cc dc
 
 addScale = mkComputing $ \(ComputingContext pcc) (DeviceContext pdc) ->
@@ -254,3 +257,15 @@ copyFaceColors = mkComputing $ \(ComputingContext pcc) (DeviceContext pdc) ->
 foreign import ccall "load_library_context" loadLibContext :: Int -> IO Int
 foreign import ccall "free_library_context" freeLibContext :: IO ()
 foreign import ccall "print_all_plat_n_dev" printAllPlaDev :: IO ()
+
+updateScale :: Maybe Float -> Computing IO ()
+updateScale Nothing  = return ()
+updateScale (Just s) = mkComputing $ \cc _ -> setScale cc s
+
+updateBottom :: Maybe Float -> Computing IO ()
+updateBottom Nothing  = return ()
+updateBottom (Just b) = mkComputing $ \cc _ -> setBottom cc b
+
+updateTop :: Maybe Float -> Computing IO ()
+updateTop Nothing  = return ()
+updateTop (Just t) = mkComputing $ \cc _ -> setTop cc t

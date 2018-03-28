@@ -9,16 +9,28 @@ Portability : unknown
 
 -}
 
-module VTS.Viewer where
+{-# LANGUAGE RecordWildCards #-}
+
+module VTS.Viewer
+  ( display
+  )where
 
 import           Control.Concurrent
-import           Control.Monad                             (when)
+import           Control.Monad                             (when, void)
 import           Control.Monad.IO.Class                    (liftIO)
 import           Graphics.Rendering.OpenGL                 as GL
 import qualified Graphics.Rendering.OpenGL.GL.VertexArrays as VA
 import           Graphics.UI.GLFW                          as GLFW
 import           VTS.Viewer.Binding
 
+
+data SyncSignals = SyncSignals
+  { mvarScal      :: MVar Float
+  , mvarBottom    :: MVar Float
+  , mvarTop       :: MVar Float
+  , mvarReadyCopy :: MVar ()
+  , mvarCopyDone  :: MVar ()
+  }
 
 display :: ComputingContext -- ^ computing context
         -> DeviceContext    -- ^ device context
@@ -52,18 +64,23 @@ display cc dc st = do
     in GL.viewport   $= (GL.Position 0 0, GL.Size m h)
 
   -- launch thread for drawing and computing
-  s1 <- newEmptyMVar
-  s2 <- newEmptyMVar
-  tid <- forkOS $ computing cc dc s1 s2
-  drawLoop st cc dc s1 s2
+  ss <- SyncSignals
+    <$> newEmptyMVar
+    <*> newEmptyMVar
+    <*> newEmptyMVar
+    <*> newEmptyMVar
+    <*> newEmptyMVar
+    
+  tid <- forkOS $ computing cc dc ss
+  drawLoop st cc dc ss
   killThread tid
 
   -- finish, clean up
   GLFW.closeWindow
   GLFW.terminate
 
-drawLoop :: Double -> ComputingContext -> DeviceContext -> MVar () -> MVar () -> IO ()
-drawLoop  st cc dc s1 s2 = do
+drawLoop :: Double -> ComputingContext -> DeviceContext -> SyncSignals -> IO ()
+drawLoop  st cc dc  ss@SyncSignals{..} = do
   w0 <- getParam Opened
   esc <- GLFW.getKey GLFW.ESC
 
@@ -115,7 +132,7 @@ drawLoop  st cc dc s1 s2 = do
     keyPass 'Q' $ GL.rotate ( 10 :: Double) (Vector3 0 0 1)
     keyPass 'E' $ GL.rotate (-10 :: Double) (Vector3 0 0 1)
     -- scaling
-    keyPass '+' $ GL.scale 1.1 1.1 (1.1 ::Double)
+    keyPass '=' $ GL.scale 1.1 1.1 (1.1 ::Double)
     keyPass '-' $ GL.scale 0.9 0.9 (0.9 :: Double)
     -- moving
     keyPass GLFW.UP    $ GL.translate (Vector3   1  0  0 :: Vector3 Float)
@@ -127,54 +144,86 @@ drawLoop  st cc dc s1 s2 = do
     GL.flush
     GL.finish
 
+    -- parameter changeed
+    let up x = x + 0.01
+        down x = x - 0.01
+    keyPass ']'  $ toUpdateParam (getScale  cc) mvarScal   up
+    keyPass '['  $ toUpdateParam (getScale  cc) mvarScal   down
+    keyPass '\'' $ toUpdateParam (getBottom cc) mvarBottom up
+    keyPass ';'  $ toUpdateParam (getBottom cc) mvarBottom down
+    keyPass '.'  $ toUpdateParam (getTop    cc) mvarTop    up
+    keyPass ','  $ toUpdateParam (getTop    cc) mvarTop    down
+
     -- send signal to make copy
-    putMVar s1 ()
+    putMVar mvarReadyCopy  ()
     -- wait signal for copying finish
-    takeMVar s2
+    takeMVar mvarCopyDone
 
     GLFW.swapBuffers
-
 
     -- sleep
     GLFW.sleep st
     -- draw again
-    drawLoop st cc dc s1 s2
+    drawLoop st cc dc ss
 
+toUpdateParam :: IO a -> MVar a -> (a -> a) -> IO ()
+toUpdateParam getOld mvar updating = do
+  old <- getOld
+  let new = updating old
+  err <- tryPutMVar mvar new
+  when (not err) $ void $ swapMVar mvar new
 
 computing :: ComputingContext
           -> DeviceContext
-          -> MVar () -> MVar ()
+          -> SyncSignals
           -> IO ()
-computing cc dc s1 s2 = runComputingM cc dc $ do
+computing cc dc ss@SyncSignals{..} = runComputingM cc dc $ do
   copyVoxelTensor
   sync
-  computeLoop s1 s2
-  where computeLoop s1 s2 = do
+  liftIO $ putMVar mvarScal   1
+  liftIO $ putMVar mvarBottom 0
+  liftIO $ putMVar mvarTop    1
+  computeLoop ss
+  where computeLoop ss@SyncSignals{..} = do
+          -- get param
+          newScale  <- liftIO $ tryTakeMVar mvarScal
+          newBottom <- liftIO $ tryTakeMVar mvarBottom
+          newTop    <- liftIO $ tryTakeMVar mvarTop
+          mDo <- case (newScale, newBottom, newTop) of
+                 (Nothing, Nothing, Nothing) -> return (return ())
+                 (s,b,t) -> do
+                   updateScale  s
+                   updateBottom b
+                   updateTop    t
+               
+                   -- computing limits
+                   addScale
+                   sync
+                   addLimit
+                   sync
 
-          -- computing limits
-          addScale
-          sync
-          addLimit
-          sync
-
-          -- computing points
-          addEdgePoints
-          addFaceColors
-          addFacePoints
-          sync
+                   -- computing points
+                   addEdgePoints
+                   addFaceColors
+                   addFacePoints
+                   sync
+                   return $ do
+                     -- copy points and colors
+                     copyEdgePoints
+                     copyFaceColors
+                     copyFacePoints
+                     copyLimitTensor
+                     sync
+                     return ()
 
           -- wait signal
-          liftIO $ takeMVar s1
+          liftIO $ takeMVar mvarReadyCopy
 
-          -- copy points and colors
-          copyEdgePoints
-          copyFaceColors
-          copyFacePoints
-          copyLimitTensor
-          sync
+          -- sycn term action
+          mDo
 
           -- send signal
-          liftIO $ putMVar s2 ()
+          liftIO $ putMVar mvarCopyDone ()
 
           -- loop and again
-          computeLoop s1 s2
+          computeLoop ss
