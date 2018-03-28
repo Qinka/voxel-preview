@@ -38,7 +38,8 @@ library
      frameworks:       OpenCL
   if os(linux)
      extra-libraries:  OpenCL
-     frameworks:       OpenCL
+     frameworks:       OpenLC
+  ghc-options:         -threaded
                       
 
 executable vts-viewer
@@ -46,5 +47,7 @@ executable vts-viewer
   build-depends:       base >=4.10 && <4.11
                      , vts
                      , vts-viewer
-  hs-source-dirs:      src
+                     , binary >= 0.8
+  hs-source-dirs:      app
   default-language:    Haskell2010
+  ghc-options:         -threaded
