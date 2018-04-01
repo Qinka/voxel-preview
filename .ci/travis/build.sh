@@ -31,7 +31,7 @@ echo Building libvts
 cd libvts
 mkdir build.d
 cd build.d
-cmake ..
+cmake -DDOWNLOAD_GTEST=On ..
 make
 cd $TRAVIS_BUILD_DIR
 
