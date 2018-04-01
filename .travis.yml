@@ -1,0 +1,49 @@
+# Copyright (C) 2018 Johann Lee <me@qinka.pro>
+#
+# This file is part of voxel-preview
+#
+# Voxel-preview is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Voxel-preview is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Voxel-preview. If not, see <http://www.gnu.org/licenses/>.
+#
+
+# To use Ubuntu 14.04
+sudo: received
+dist: trusty
+
+# matrix of testing
+matrix:
+  include:
+    - env: GHC_VER=8.2.2 THREADED=t RUN_TEST=t LLVM=3.9
+      addons:
+        apt:
+          sources:
+            - hvr-ghc
+          packages:
+            - wget
+            - curl
+            - ghc-8.2.2
+            - lldb-3.9
+            - llvm-3.9
+            - llvm-3.9-dev
+            - llvm-3.9-runtime
+            - libgtest-dev
+
+before_install:
+  - source $TRAVIS_BUILD_DIR/.ci/travis/init.sh
+
+script:
+  - source $TRAVIS_BUILD_DIR/.ci/travis/build.sh
+  - source $TRAVIS_BUILD_DIR/.ci/travis/test.sh
+
+after_success:
+  - echo finish
