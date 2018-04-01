@@ -37,6 +37,7 @@ matrix:
             - llvm-3.9-dev
             - llvm-3.9-runtime
             - libgtest-dev
+            - ocl-icd-opencl-dev
 
 before_install:
   - source $TRAVIS_BUILD_DIR/.ci/travis/init.sh
