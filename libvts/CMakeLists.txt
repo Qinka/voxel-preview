@@ -43,7 +43,7 @@ endif(${MSVC})
 enable_testing()
 ## GoogleTest
 if(${DOWNLOAD_GTEST})
-  configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+  configure_file(gtest.cmake.in googletest-download/CMakeLists.txt)
   execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
     RESULT_VARIABLE result
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
