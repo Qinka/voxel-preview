@@ -40,6 +40,27 @@ else(${MSVC})
   add_definitions( -D _VTS_EXPORT_)
 endif(${MSVC})
 
+## Install and packing
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+  set(LIB_INS_PATH bin)
+else()
+  set(LIB_INS_PATH lib)
+endif()
+set(VTS_PUB_INC ${PROJECT_SOURCE_DIR}/include/vts.h;${PROJECT_SOURCE_DIR}/include/vts_error.h)
+set_target_properties(vts PROPERTIES
+  PUBLIC_HEADER "${VTS_PUB_INC}"
+  )
+
+install(TARGETS vts
+  ARCHIVE DESTINATION lib
+  LIBRARY  DESTINATION ${LIB_INS_PATH}
+  PUBLIC_HEADER DESTINATION include
+  )
+
+set(CPACK_GENERATOR "DEB")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Johann Lee")
+include(CPack)
+
 enable_testing()
 ## GoogleTest
 find_package(GTest REQUIRED)
