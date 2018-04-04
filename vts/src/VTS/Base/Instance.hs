@@ -15,10 +15,13 @@ The instance of various type class.
 
 module VTS.Base.Instance
   ( fromIntegrals
+  , MayVTS
+  , readMayVTS
   ) where
 
 import           Control.Monad         (replicateM, when)
-import           Data.Binary           (Binary (..), Get)
+import           Data.Binary           (Binary (..), Get, decode)
+import           Data.Binary.Get
 import           Data.Word             (Word16, Word8)
 import           Foreign.C.Types       (CSize (..))
 import           Foreign.ForeignPtr    (ForeignPtr, mallocForeignPtrArray,
@@ -28,6 +31,7 @@ import           Foreign.Ptr           (Ptr)
 import           Foreign.Storable      (Storable (..))
 import           System.IO.Unsafe      (unsafePerformIO)
 import           VTS.Base.Internal
+import qualified Data.ByteString.Lazy as BL
 
 -- | foregin functions for pointers
 
@@ -128,13 +132,32 @@ getCheckMaginNumber = do
   when (m /= 0x92 || g /= 0x19 || n /= 0x24) $ fail "error magic number"
   return ()
 
-
 -- | cast from integral, using list
-fromIntegrals :: (Integral a, Num b)
+fromIntegrals :: (Integral a, Num b, Storable a, Storable b)
               => VoxelTensor a
-              => VoxelTensor b
+              -> VoxelTensor b
 fromIntegrals vtsI =
-  let (ls,d,h,w) = toList
-      ls' = map fromIntegral ls
-      (Right vtsO) = ls' d h w
+  let (ls',d,h,w) = toList vtsI
+      ls = map fromIntegral ls'
+      (Right vtsO) = fromList (listS ls) d h w
   in vtsO
+  where listS :: [a] -> [a]
+        listS = id
+
+
+-- | handle the different type
+data MayVTS = MInt   (VoxelTensor Int)
+            | MWord8 (VoxelTensor Word8)
+            | MFloat (VoxelTensor Float)
+            | MNothing
+  deriving (Eq,Show)
+
+readMayVTS :: FilePath -> IO MayVTS
+readMayVTS fn = do
+  file <- BL.readFile fn
+  let tid = runGet getVTXTI file
+  return $ case tid of
+    0x6604 -> MFloat $ decode file
+    0x6908 -> MInt   $ decode file
+    0x6501 -> MWord8 $ decode file
+    _      -> MNothing
