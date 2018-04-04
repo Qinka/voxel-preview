@@ -15,8 +15,9 @@ The instance of various type class.
 
 module VTS.Base.Instance
   ( fromIntegrals
-  , MayVTS
+  , MayVTS(..)
   , readMayVTS
+  , mapVTS
   ) where
 
 import           Control.Monad         (replicateM, when)
@@ -161,3 +162,10 @@ readMayVTS fn = do
     0x6908 -> MInt   $ decode file
     0x6501 -> MWord8 $ decode file
     _      -> MNothing
+
+
+mapVTS :: (Storable a, Storable b) =>  (a -> b) -> VoxelTensor a -> VoxelTensor b
+mapVTS f vtsI =
+    let (ls,d,w,h) = toList vtsI
+        (Right vtsO) = fromList (map f ls) d w h
+    in vtsO

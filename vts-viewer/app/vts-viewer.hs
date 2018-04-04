@@ -55,11 +55,14 @@ main = do
     ListDev -> printAllPlaDev
     Viewer{..} -> do
       putStrLn $ "Openning " ++ filePath
-      vts <- decodeFile filePath :: IO (VoxelTensor Word8)
-      let (ls,d,w,h) = toList vts :: ([Word8],Int,Int,Int)
-          Right o = fromList ((/255).fromIntegral <$> ls) d w h :: Either String (VoxelTensor Float)
+      vts <- mayVTStoFloat <$> readMayVTS filePath
       loadLibContext platformId
-      cc <- createContext o
+      cc <- createContext vts
       dc <- createDevContext cc deviceId
       display cc dc (1/(fps+2))
       freeLibContext
+
+mayVTStoFloat :: MayVTS -> VoxelTensor Float
+mayVTStoFloat (MFloat vts) =               vts
+mayVTStoFloat (MInt   vts) = mapVTS (/255) $ fromIntegrals vts
+mayVTStoFloat (MWord8 vts) = mapVTS (/255) $ fromIntegrals vts
