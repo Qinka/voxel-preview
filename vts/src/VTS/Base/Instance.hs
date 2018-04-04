@@ -14,7 +14,8 @@ The instance of various type class.
 {-# LANGUAGE Unsafe                   #-}
 
 module VTS.Base.Instance
-  () where
+  ( fromIntegrals
+  ) where
 
 import           Control.Monad         (replicateM, when)
 import           Data.Binary           (Binary (..), Get)
@@ -126,3 +127,14 @@ getCheckMaginNumber = do
   (m,g,n) <- get :: Get (Word8,Word8,Word8)
   when (m /= 0x92 || g /= 0x19 || n /= 0x24) $ fail "error magic number"
   return ()
+
+
+-- | cast from integral, using list
+fromIntegrals :: (Integral a, Num b)
+              => VoxelTensor a
+              => VoxelTensor b
+fromIntegrals vtsI =
+  let (ls,d,h,w) = toList
+      ls' = map fromIntegral ls
+      (Right vtsO) = ls' d h w
+  in vtsO
