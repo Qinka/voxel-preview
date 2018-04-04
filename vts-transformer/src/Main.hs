@@ -15,9 +15,13 @@ import           System.Console.CmdArgs
 import           System.IO
 import           VTS.Base
 
+data InForm = Visdom | Torch
+  deriving (Show,Data, Typeable)
+
 -- | operator
 data Transformer = Transformer
   { tInFile  :: FilePath -- ^ input file path
+  , tInForm  :: InForm
   , tOutFile :: FilePath -- ^ output file path (prefix)
   , tTop     :: Int -- ^ top padding
   , tBottom  :: Int -- ^ bottom padding
@@ -37,6 +41,16 @@ transformer = Transformer
     &= explicit
     &= name "i"
     &= name "in"
+  , tInForm =
+    enum [ Visdom
+           &= help "visdom images format"
+           &= explicit
+           &= name "visdom"
+         , Torch
+           &= help "torch serialization format"
+           &= explicit
+           &= name "torch"
+         ]
   , tOutFile = def
     &= help "output file path prefix"
     &= typ "FILE"
@@ -91,6 +105,28 @@ main :: IO ()
 main = do
   trs@Transformer{..} <- cmdArgs transformer
   print trs
+  case tInForm of
+    Visdom -> fromVisdom trs
+    Torch  -> fromTorch  trs
+
+fromTorch :: Transformer -> IO ()
+fromTorch Transformer{..} = do
+  files <- lines <$> readFile tInFile
+  let n:d:w:h:_ = map read . words $ files !! 7
+      items = map read . words $ files !! 17
+      lists = splits (d * w * h) n items :: [[Float]]
+  flip mapM_ (zip [0..] lists) $ \(i,list) ->
+    let (Right vts) = fromList list d w h
+        fn = tOutFile ++ "_" ++ show i ++ ".vts"
+    in encodeFile fn vts
+
+splits n 0 _   = []
+splits n x ls =
+  let (l,r) = splitAt n ls
+  in l : splits n (x-1) r
+
+fromVisdom :: Transformer -> IO ()
+fromVisdom Transformer{..} = do
   rdImg <- readImage tInFile
   let trans' = trans tOutFile (tLeft, tTop, tRight, tBottom) (tDepth, tWidth, tHeight)
   case rdImg of
