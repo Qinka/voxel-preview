@@ -44,6 +44,11 @@ testing::Environment* const global_env = testing::AddGlobalTestEnvironment(new A
 
 // Testing for test_cl_kernel_call
 
+
+TEST(print_all_plat_n_dev_test,test1) {
+  print_all_plat_n_dev();
+}
+
 TEST(test_kernel_test, _1st) {
   test_cl_kernel_call(4);
 }
@@ -60,11 +65,6 @@ TEST(test_kernel_test, _3rd) {
 TEST(test_kernel_test, _4th) {
   test_cl_kernel_call(10);
 }
-
-TEST(print_all_plat_n_dev_test,test1) {
-  print_all_plat_n_dev();
-}
-
 
 template<typename T>
 class MemoryGen {
