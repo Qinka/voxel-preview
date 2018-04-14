@@ -23,7 +23,7 @@ dist: trusty
 # matrix of testing
 matrix:
   include:
-    - env: GHC_VER=8.2.2 THREADED=t RUN_TEST=t LLVM=3.9
+    - env: GHC_VER=8.2.2 THREADED=t LLVM=3.9
       addons:
         apt:
           sources:
