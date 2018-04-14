@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.3)
 
 project(
   libvts
-  VERSION 0.1
+  VERSION 0.1.1
   )
 
 
@@ -20,10 +20,12 @@ endif(${MSVC})
 ## OpenCL
 find_package(OpenCL 1.0 REQUIRED)
 
+## includes
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${OpenCL_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR})
 
+## sources
 set(VTS_SRC_DIR  ${PROJECT_SOURCE_DIR}/source)
 set(
   VTS_SRC_FILES
@@ -31,7 +33,7 @@ set(
   ${VTS_SRC_DIR}/internal.cc
   ${VTS_SRC_DIR}/kernels.cc
   )
-
+## targets
 add_library(vts SHARED ${VTS_SRC_FILES})
 target_link_libraries(vts ${OpenCL_LIBRARY})
 if (${MSVC})
@@ -53,12 +55,20 @@ set_target_properties(vts PROPERTIES
 
 install(TARGETS vts
   ARCHIVE DESTINATION lib
-  LIBRARY  DESTINATION ${LIB_INS_PATH}
-  PUBLIC_HEADER DESTINATION include
+  LIBRARY  DESTINATION ${LIB_INS_PATH} COMPONENT runtime
+  PUBLIC_HEADER DESTINATION include COMPONENT dev
   )
 
+## cpack
+SET(CPACK_DEB_COMPONENT_INSTALL ON)
+set(CPACK_DEBIAN_PACKAGE_SOURCE "libvts")
 set(CPACK_GENERATOR "DEB")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Johann Lee")
+set(CPACK_PACKAGE_CONTACT "Johann Lee <me@qinka.pro>")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.1-6), llibgcc1 (>= 1:3.4.2-12), libstdc++6 (>= 5)")
+set(CPACK_DEBIAN_DEV_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libvts-runtime (>= 0.1.1)")
+set(CPACK_DEBIAN_RUNETIME_PACKAGE_SECTION "runtime")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION_SUMMARY "Library voxel tensors, libvts for short.")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "The voxel tensor library for voxel tensor preview.")
 include(CPack)
 
 enable_testing()
