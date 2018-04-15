@@ -1,0 +1,5 @@
+libvts (0.1.1-1) unstable; urgency=medium
+
+  * Initial add the debian files (Card: 8964986)
+
+ -- Johann Lee <me@qinka.pro>  Sun, 15 Apr 2018 17:57:00 +0800

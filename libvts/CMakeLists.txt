@@ -62,7 +62,7 @@ install(TARGETS vts
 ## cpack
 SET(CPACK_DEB_COMPONENT_INSTALL ON)
 set(CPACK_DEBIAN_PACKAGE_SOURCE "libvts")
-set(CPACK_GENERATOR "DEB")
+set(CPACK_GENERATOR "DEB;TGZ")
 set(CPACK_PACKAGE_CONTACT "Johann Lee <me@qinka.pro>")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.1-6), llibgcc1 (>= 1:3.4.2-12), libstdc++6 (>= 5)")
 set(CPACK_DEBIAN_DEV_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libvts-runtime (>= 0.1.1)")

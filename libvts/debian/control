@@ -1,0 +1,22 @@
+Source: libvts
+Priority: optional
+Maintainer: Johann Lee <me@qinka.pro>
+Build-Depends: debhelper (>=9)
+Standards-Version: 3.9.6
+Section: libs
+Homepage: https://github.com/Qinka/voxel-preview
+#Vcst: git://anonscm.debian.org/collab-maint/libvts.git
+#Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/libvts.git
+
+Package: libvts-dev
+Section: devel
+Architecture: any
+Depends: libvts-runtime (= ${binary:Version}), ${misc:Depends}
+Description: The libvts (TODO)
+ Long TODO
+Section: libs
+Package: libvts-runtime
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: libvts TODO
+ Long TODO
