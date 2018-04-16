@@ -24,3 +24,8 @@ build.d
 *.build.d
 
 
+# For debian build
+*.dsc
+*.deb
+*.tar.xz
+libvts/obj-x86_64-linux-gnu
