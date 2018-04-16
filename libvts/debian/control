@@ -14,8 +14,10 @@ Architecture: any
 Depends: libvts-runtime (= ${binary:Version}), ${misc:Depends}
 Description: The libvts (TODO)
  Long TODO
-Section: libs
+
+
 Package: libvts-runtime
+Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: libvts TODO
