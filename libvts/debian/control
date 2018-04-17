@@ -1,7 +1,7 @@
 Source: libvts
 Priority: optional
 Maintainer: Johann Lee <me@qinka.pro>
-Build-Depends: debhelper (>=9)
+Build-Depends: debhelper (>=9), clinfo
 Standards-Version: 3.9.6
 Section: libs
 Homepage: https://github.com/Qinka/voxel-preview

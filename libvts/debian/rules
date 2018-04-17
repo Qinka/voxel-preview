@@ -16,6 +16,13 @@
 # package maintainers to append LDFLAGS
 #export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
+ifeq "$(clinfo | wc -l)" "1"
+	TEST_FLAG="-DDOWNLOAD_GTEST=ON"
+else
+	TEST_FLAG="-DENABLE_TEST=OFF"
+endif
+
+
 override_dh_auto_clean:
 	dh_auto_clean
 	echo `pwd`
@@ -26,10 +33,12 @@ override_dh_auto_clean:
 %:
 	dh $@ -D. --buildsystem=cmake
 
+
+
 # dh_make generated override targets
 # This is example for Cmake (See https://bugs.debian.org/641051 )
 override_dh_auto_configure:
-	dh_auto_configure -- -DDOWNLOAD_GTEST=on
+	dh_auto_configure -- $(TEST_FLAG)
 #	-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH)
 
 .PHONY: override_dh_auto_clean

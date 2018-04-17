@@ -8,6 +8,9 @@ project(
   VERSION 0.1.1
   )
 
+## Flags
+option(ENABLE_TEST "Enable test" ON)
+option(DOWNLOAD_GTEST "Download google test" ON)
 
 ## setting up the c++-11 and c-11
 set(CMAKE_CXX_STANDARD 11)
@@ -71,35 +74,37 @@ set(CPACK_DEBIAN_PACKAGE_DESCRIPTION_SUMMARY "Library voxel tensors, libvts for 
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "The voxel tensor library for voxel tensor preview.")
 include(CPack)
 
-enable_testing()
-## GoogleTest
-if(${DOWNLOAD_GTEST})
-  configure_file(gtest.cmake.in googletest-download/CMakeLists.txt)
-  execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
-  if(result)
-    message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+if(ENABLE_TEST)
+  enable_testing()
+  ## GoogleTest
+  if(DOWNLOAD_GTEST)
+    configure_file(gtest.cmake.in googletest-download/CMakeLists.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+    if(result)
+      message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+    endif()
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
+    if(result)
+      message(FATAL_ERROR "Build step for googletest failed: ${result}")
+    endif()
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    add_subdirectory(
+      ${CMAKE_BINARY_DIR}/googletest-src
+      ${CMAKE_BINARY_DIR}/googletest-build
+      EXCLUDE_FROM_ALL
+      )
+  else()
+    find_package(GTest REQUIRED)
   endif()
-  execute_process(COMMAND ${CMAKE_COMMAND} --build .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
-  if(result)
-    message(FATAL_ERROR "Build step for googletest failed: ${result}")
-  endif()
-  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-  add_subdirectory(
-    ${CMAKE_BINARY_DIR}/googletest-src
-    ${CMAKE_BINARY_DIR}/googletest-build
-    EXCLUDE_FROM_ALL
-    )
-else()
-  find_package(GTest REQUIRED)
+  include_directories(${GTEST_INCLUDE_DIRS})
+  add_executable(vts-test ${PROJECT_SOURCE_DIR}/test/api_test.cc)
+  target_link_libraries(vts-test gtest_main vts ${OpenCL_LIBRARY})
+  if(NOT(CMAKE_SYSTEM_NAME MATCHES "Windows"))
+    target_link_libraries(vts-test pthread)
+  endif(NOT(CMAKE_SYSTEM_NAME MATCHES "Windows"))
+  add_test(LIBVTS_TEST vts-test)
 endif()
-include_directories(${GTEST_INCLUDE_DIRS})
-add_executable(vts-test ${PROJECT_SOURCE_DIR}/test/api_test.cc)
-target_link_libraries(vts-test gtest_main vts ${OpenCL_LIBRARY})
-if(NOT(CMAKE_SYSTEM_NAME MATCHES "Windows"))
-  target_link_libraries(vts-test pthread)
-endif(NOT(CMAKE_SYSTEM_NAME MATCHES "Windows"))
-add_test(LIBVTS_TEST vts-test)
