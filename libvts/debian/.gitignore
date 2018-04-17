@@ -1,3 +1,4 @@
 files
 tmp
 libvts*
+debhelper-build-stamp
