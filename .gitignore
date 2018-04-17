@@ -29,3 +29,8 @@ build.d
 *.deb
 *.tar.xz
 libvts/obj-x86_64-linux-gnu
+*.ddeb
+*.debhelper
+*.tar.gz
+*.buildinfo
+*.changes
