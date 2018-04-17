@@ -34,3 +34,4 @@ libvts/obj-x86_64-linux-gnu
 *.tar.gz
 *.buildinfo
 *.changes
+*.tar
