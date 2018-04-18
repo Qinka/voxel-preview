@@ -23,22 +23,20 @@ else
 endif
 
 
-override_dh_auto_clean:
-	dh_auto_clean
-	echo `pwd`
-	rm -rf build.d
-	rm -rf *.build.d
-
-
 %:
-	dh $@ -D. --buildsystem=cmake
+	dh $@  --buildsystem=cmake
 
 
 
 # dh_make generated override targets
 # This is example for Cmake (See https://bugs.debian.org/641051 )
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf build.d
+	rm -rf *.build.d
+
 override_dh_auto_configure:
 	dh_auto_configure -- $(TEST_FLAG)
 #	-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH)
 
-.PHONY: override_dh_auto_clean
+.PHONY: override_dh_auto_clean override_dh_auto_configure

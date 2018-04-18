@@ -1,7 +1,10 @@
 Source: libvts
 Priority: optional
 Maintainer: Johann Lee <me@qinka.pro>
-Build-Depends: debhelper (>=9), clinfo (>=2)
+Build-Depends: debhelper (>=9),
+               clinfo,
+               cmake,
+               ocl-icd-opencl-dev
 Standards-Version: 3.9.6
 Section: libs
 Homepage: https://github.com/Qinka/voxel-preview
@@ -11,7 +14,9 @@ Homepage: https://github.com/Qinka/voxel-preview
 Package: libvts-dev
 Section: devel
 Architecture: any
-Depends: libvts-runtime (= ${binary:Version}), ${misc:Depends}
+Depends: libvts-runtime (= ${binary:Version}),
+         ${misc:Depends},
+         ocl-icd-opencl-dev
 Description: The libvts (TODO)
  Long TODO
 
@@ -19,6 +24,8 @@ Description: The libvts (TODO)
 Package: libvts-runtime
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         ocl-icd-opencl-dev
 Description: libvts TODO
  Long TODO

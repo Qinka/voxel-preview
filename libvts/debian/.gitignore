@@ -4,3 +4,4 @@ libvts*
 !libvts-dev.install
 !libvts-runtime.install
 debhelper-build-stamp
+changelog
