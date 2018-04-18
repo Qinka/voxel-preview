@@ -1,4 +1,4 @@
-libvts (0.1.1-1) unstable; urgency=medium
+libvts (0.1.1-2);  urgency=medium
 
   * Initial add the debian files (Card: 8964986)
 
