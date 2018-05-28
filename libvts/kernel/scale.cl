@@ -11,6 +11,6 @@ KERNEL_DEF
    int x = get_global_id(0);
    float v = from[x];
    /*to[x] = v * sign(fmax(bottom,v) - bottom) * sign(top - fmin(top,v));*/
-   to[x] = v * isgreater(v,bottom) * isless(v,top); /* v * (v >= a) * (v <= b) */
+   to[x] = v * isgreaterequal(v,bottom) * islessequal(v,top); /* v * (v >= a) * (v <= b) */
  }
  )

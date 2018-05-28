@@ -12,7 +12,9 @@ KERNEL_DEF
    int idxk   = idx0 * 72;
 
    __global float * cur = colors + idxk;
-   for(int i = 0 ; i < 72; ++i) {
+   for(int i = 0 ; i < 24; ++i) {
+     *cur++ = 0;
+     *cur++ = 0;
      *cur++ = values[idx0];
    }
  }

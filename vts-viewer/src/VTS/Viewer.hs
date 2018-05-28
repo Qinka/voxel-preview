@@ -16,7 +16,7 @@ module VTS.Viewer
   )where
 
 import           Control.Concurrent
-import           Control.Monad                             (when, void)
+import           Control.Monad                             (void, when)
 import           Control.Monad.IO.Class                    (liftIO)
 import           Graphics.Rendering.OpenGL                 as GL
 import qualified Graphics.Rendering.OpenGL.GL.VertexArrays as VA
@@ -56,7 +56,7 @@ display cc dc st = do
   GL.depthFunc  $= Just GL.Lequal
 
   -- set the color to clear background
-  GL.clearColor $= Color4 0 0 0 0
+  GL.clearColor $= Color4 1 1 1 0
 
    -- OpenGL Viewport
   GLFW.windowSizeCallback $= \size@(GL.Size w h) ->
@@ -70,7 +70,7 @@ display cc dc st = do
     <*> newEmptyMVar
     <*> newEmptyMVar
     <*> newEmptyMVar
-    
+
   tid <- forkOS $ computing cc dc ss
   drawLoop st cc dc ss
   killThread tid
@@ -195,7 +195,7 @@ computing cc dc ss@SyncSignals{..} = runComputingM cc dc $ do
                    updateScale  s
                    updateBottom b
                    updateTop    t
-               
+
                    -- computing limits
                    addScale
                    sync

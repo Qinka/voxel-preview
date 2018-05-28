@@ -6,6 +6,7 @@ module Main where
 
 import           Codec.Picture
 import           Codec.Picture.Types
+import           Control.Monad
 import           Data.Binary
 import           Data.Vector.Storable   (Vector)
 import qualified Data.Vector.Storable   as V
@@ -115,7 +116,7 @@ fromTorch Transformer{..} = do
   let n:d:w:h:_ = map read . words $ files !! 7
       items = map read . words $ files !! 17
       lists = splits (d * w * h) n items :: [[Float]]
-  flip mapM_ (zip [0..] lists) $ \(i,list) ->
+  forM_ (zip [0..] lists) $ \(i,list) ->
     let (Right vts) = fromList list d w h
         fn = tOutFile ++ "_" ++ show i ++ ".vts"
     in encodeFile fn vts
@@ -141,7 +142,7 @@ fromVisdom Transformer{..} = do
           let (w, h, v) = transToListGrey8 img
               rows = splitIntoBoxes padding shape (w,h) v
               vtss = zip [0..] $ genVoxelTensors shape rows
-          flip mapM_ vtss $ \(i,vts) ->
+          forM_ vtss $ \(i,vts) ->
             let fn = prefix ++ "_" ++ show i ++ ".vts"
             in encodeFile fn vts
           return ()
